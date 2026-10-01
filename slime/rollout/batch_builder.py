@@ -473,6 +473,7 @@ class BatchBuilder:
                 "rollout_top_p_log_probs",
                 "rollout_routed_experts",
                 "source_names",
+                "metadata",
                 "prompt",
                 "teacher_log_probs",
             ]:

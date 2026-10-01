@@ -79,6 +79,14 @@ def test_thd_cp_indices_select_two_chunks_per_packed_sequence():
 
 
 @pytest.mark.unit
+def test_thd_cp1_indices_accept_odd_unpadded_lengths():
+    # Without CP, slice_with_cp does not pad; odd packed lengths must still map 1:1.
+    indices = get_packed_cp_local_indices([0, 1357, 1408], cp_size=1, cp_rank=0, device=torch.device("cpu"))
+
+    assert indices.tolist() == list(range(1408))
+
+
+@pytest.mark.unit
 def test_raw_qkv_loader_is_inverse_of_exporter():
     hidden_size = 3
     q = torch.arange(16 * hidden_size).reshape(16, hidden_size)

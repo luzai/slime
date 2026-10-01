@@ -214,6 +214,7 @@ class Qwen3_5VLModel(MegatronModule):
         pixel_values_videos: torch.Tensor | None = None,
         image_grid_thw: torch.Tensor | None = None,
         video_grid_thw: torch.Tensor | None = None,
+        mm_token_type_ids: torch.Tensor | None = None,  # HF processor output; MRoPE is rebuilt from input_ids
         **kwargs,
     ) -> torch.Tensor:
         if packed_seq_params is None:
