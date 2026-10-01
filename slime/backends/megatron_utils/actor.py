@@ -236,19 +236,9 @@ class MegatronTrainRayActor(TrainRayActor):
             rollout_data["rollout_mask_sums"] = rollout_data["rollout_mask_sums"].to(
                 device=device, dtype=torch.float32, non_blocking=True
             )
-        if "multimodal_train_inputs" in rollout_data:
-            # Move multimodal training tensors to GPU in advance
-            rollout_data["multimodal_train_inputs"] = [
-                (
-                    {
-                        key: value.to(device=device, non_blocking=True) if isinstance(value, torch.Tensor) else value
-                        for key, value in mm_dict.items()
-                    }
-                    if mm_dict is not None
-                    else None
-                )
-                for mm_dict in rollout_data["multimodal_train_inputs"]
-            ]
+        # Multimodal training tensors (e.g. pixel_values, ~13 MB per sample) stay on the host:
+        # moving every sample up front grows GPU memory with the number of samples per rank.
+        # get_batch moves one microbatch to the device at a time.
 
         for key in ["rollout_log_probs", "teacher_log_probs"]:
             if key not in rollout_data:

@@ -140,6 +140,9 @@ def get_batch(
         for mm_input_dict in multimodal_train_inputs:
             if mm_input_dict is not None:
                 for key, mm_tensor in mm_input_dict.items():
+                    if isinstance(mm_tensor, torch.Tensor):
+                        # Rollout data keeps these on the host; move only this microbatch.
+                        mm_tensor = mm_tensor.to(device=accelerator.current_device(), non_blocking=True)
                     if key not in multimodal_data:
                         multimodal_data[key] = mm_tensor
                     else:
