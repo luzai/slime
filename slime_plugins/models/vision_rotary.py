@@ -1,4 +1,9 @@
-"""Vision rotary frequencies that survive model-wide dtype conversion."""
+"""Experimental FP32 vision rotary; intentionally not enabled by the provider.
+
+The 2026-10-01 paired 32-state GPU diagnostic reduced average total variation
+slightly but increased maximum total variation and average distribution KL.
+Preserving frequency precision alone is not an accepted mismatch fix.
+"""
 
 import torch
 from torch import nn
