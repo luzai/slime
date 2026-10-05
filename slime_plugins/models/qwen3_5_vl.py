@@ -13,6 +13,7 @@ from slime.utils import accelerator
 
 from .qwen3_5 import get_qwen3_5_spec
 from .qwen3_5_vl_utils import build_packed_mrope_position_ids, gather_packed_input_ids, get_packed_cp_local_indices
+from .vision_rotary import FP32VisionRotaryEmbedding
 
 
 class Qwen3_5MultimodalRotaryEmbedding(MultimodalRotaryEmbedding):
@@ -61,6 +62,10 @@ def _load_vision_model(hf_config, dtype: torch.dtype, use_cpu_initialization: bo
     device = torch.device("cpu") if use_cpu_initialization else accelerator.current_device()
     with torch.device(device):
         vision_model = vision_model_cls._from_config(hf_config.vision_config)
+    rotary = vision_model.rotary_pos_emb
+    vision_model.rotary_pos_emb = FP32VisionRotaryEmbedding(
+        rotary.dim, rotary.theta, device=rotary.inv_freq.device
+    )
     vision_model.to(dtype=dtype)
 
     # HF modules are replicated across TP ranks. Mark them explicitly so slime's
