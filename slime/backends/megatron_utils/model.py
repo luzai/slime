@@ -1016,4 +1016,7 @@ def initialize_model_and_optimizer(
             optimizer.reload_model_params()
     clear_memory()
 
+    from slime.utils.lifecycle_hooks import call_hook
+
+    call_hook(args, "custom_megatron_after_checkpoint_load_hook_path", opt_param_scheduler, iteration, role)
     return model, optimizer, opt_param_scheduler, iteration

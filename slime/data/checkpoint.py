@@ -45,7 +45,7 @@ def save_checkpoint(args, rollout_id, actor_model, critic_model, rollout_manager
         and not args.debug_train_only
         and not args.debug_rollout_only
     )
-    force_sync = straw_checkpoint or args.release_train or rollout_id == args.num_rollout - 1
+    force_sync = getattr(args, "force_sync_save", False) or straw_checkpoint or args.release_train or rollout_id == args.num_rollout - 1
     if straw_checkpoint and (Path(args.save) / "rollout" / f"committed_{rollout_id}.json").exists():
         raise FileExistsError("Refusing to overwrite a committed straw checkpoint")
     if actor_trains:

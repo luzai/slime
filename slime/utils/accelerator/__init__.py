@@ -97,7 +97,7 @@ def is_musa_environment() -> bool:
     return (
         is_musa_available()
         or os.environ.get("SLIME_ACCELERATOR", "").lower() == "musa"
-        or "MUSA_VISIBLE_DEVICES" in os.environ
+        or bool(os.environ.get("MUSA_VISIBLE_DEVICES"))
         or bool(os.environ.get("MUSA_PATCH_PATH"))
     )
 
@@ -118,7 +118,7 @@ def _musa_requested() -> bool:
     configured = os.environ.get("SLIME_ACCELERATOR", "").lower()
     if configured and configured != "auto":
         return configured == "musa"
-    return "MUSA_VISIBLE_DEVICES" in os.environ or bool(os.environ.get("MUSA_PATCH_PATH"))
+    return bool(os.environ.get("MUSA_VISIBLE_DEVICES")) or bool(os.environ.get("MUSA_PATCH_PATH"))
 
 
 def _bootstrap_musa_patch_if_needed() -> bool:
@@ -150,7 +150,7 @@ def is_npu_environment() -> bool:
     return (
         is_npu_available()
         or os.environ.get("SLIME_ACCELERATOR", "").lower() == "npu"
-        or "ASCEND_RT_VISIBLE_DEVICES" in os.environ
+        or bool(os.environ.get("ASCEND_RT_VISIBLE_DEVICES"))
         or bool(os.environ.get("ASCEND_HOME_PATH"))
     )
 
@@ -171,7 +171,7 @@ def _npu_requested() -> bool:
     configured = os.environ.get("SLIME_ACCELERATOR", "").lower()
     if configured and configured != "auto":
         return configured == "npu"
-    return "ASCEND_RT_VISIBLE_DEVICES" in os.environ or bool(os.environ.get("ASCEND_HOME_PATH"))
+    return bool(os.environ.get("ASCEND_RT_VISIBLE_DEVICES")) or bool(os.environ.get("ASCEND_HOME_PATH"))
 
 
 def _bootstrap_torch_npu_if_needed() -> bool:
@@ -203,7 +203,7 @@ def is_supa_environment() -> bool:
     return (
         is_supa_available()
         or os.environ.get("SLIME_ACCELERATOR", "").lower() == "supa"
-        or "SUPA_VISIBLE_DEVICES" in os.environ
+        or bool(os.environ.get("SUPA_VISIBLE_DEVICES"))
         or bool(os.environ.get("BIREN_HOME"))
     )
 
@@ -224,7 +224,7 @@ def _supa_requested() -> bool:
     configured = os.environ.get("SLIME_ACCELERATOR", "").lower()
     if configured and configured != "auto":
         return configured == "supa"
-    return "SUPA_VISIBLE_DEVICES" in os.environ or bool(os.environ.get("BIREN_HOME"))
+    return bool(os.environ.get("SUPA_VISIBLE_DEVICES")) or bool(os.environ.get("BIREN_HOME"))
 
 
 def _bootstrap_torch_supa_if_needed() -> bool:
