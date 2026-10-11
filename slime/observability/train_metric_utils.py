@@ -177,6 +177,8 @@ def log_rollout_data(
             "micro_batch_indices",
             "source_names",
             "local_raw_reward",
+            # Per-sample train_metadata dicts (BatchBuilder "metadata") are loss inputs, not metrics.
+            "metadata",
         }
         per_rollout_mean_keys = {
             "log_probs",
