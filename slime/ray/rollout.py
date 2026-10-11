@@ -18,6 +18,7 @@ from slime.rollout.batch_builder import BatchBuilder
 from slime.rollout.sample_hooks import set_current_rollout_id
 from slime.utils.health_monitor import RolloutHealthMonitor
 from slime.utils.http_utils import init_http_client
+from slime.utils.lifecycle_hooks import call_hook
 from slime.utils.misc import load_function
 from slime.utils.rollout_transport import accept_raw_rollout, check_rollout_storage, load_rollout_samples
 from slime.utils.staleness import fully_async_metrics_enabled
@@ -218,11 +219,14 @@ class RolloutManager:
     def save(self, rollout_id):
         self.data_source.save(rollout_id)
         self.batch_builder.save(rollout_id)
+        call_hook(self.args, "custom_rollout_checkpoint_saved_hook_path", rollout_id)
 
     def training_completed(self, rollout_id):
         self.batch_builder.training_completed(rollout_id)
+        return call_hook(self.args, "custom_rollout_training_completed_hook_path", rollout_id)
 
     def load(self, rollout_id=None):
+        call_hook(self.args, "custom_rollout_checkpoint_load_hook_path", rollout_id)
         self.data_source.load(rollout_id)
         self.batch_builder.load(rollout_id)
 

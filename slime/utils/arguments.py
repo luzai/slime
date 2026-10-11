@@ -565,6 +565,19 @@ def get_slime_extra_args_provider(add_custom_arguments=None):
                     "It may be helpful for updating loss mask."
                 ),
             )
+            for event in ("training-completed", "checkpoint-saved", "checkpoint-load"):
+                parser.add_argument(
+                    f"--custom-rollout-{event}-hook-path",
+                    type=str,
+                    default=None,
+                    help="Optional synchronous hook(args, rollout_id); failures stop the run.",
+                )
+            parser.add_argument(
+                "--force-sync-save",
+                action="store_true",
+                default=False,
+                help="Wait for every scheduled model checkpoint before saving rollout state.",
+            )
             parser.add_argument(
                 "--rollout-data-transport",
                 type=str,
@@ -864,6 +877,12 @@ def get_slime_extra_args_provider(add_custom_arguments=None):
                 action="store_true",
                 default=False,
                 help="Whether to skip evaluation before training.",
+            )
+            parser.add_argument(
+                "--eval-before-train-on-resume",
+                action="store_true",
+                default=False,
+                help="Evaluate at start_rollout_id even when resuming a nonzero checkpoint.",
             )
 
             # The following keys are used to override the rollout version during eval.
@@ -1535,6 +1554,12 @@ def get_slime_extra_args_provider(add_custom_arguments=None):
                 "--custom-megatron-init-path",
                 type=str,
                 default=None,
+            )
+            parser.add_argument(
+                "--custom-megatron-after-checkpoint-load-hook-path",
+                type=str,
+                default=None,
+                help="Optional hook(args, scheduler, iteration, role), after model/Adam/RNG restore.",
             )
             parser.add_argument(
                 "--custom-megatron-before-log-prob-hook-path",

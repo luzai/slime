@@ -3,10 +3,12 @@ import ray
 from slime.observability.logging_utils import configure_logger, finish_tracking, init_tracking
 from slime.ray.placement_group import create_placement_groups, create_rollout_manager, create_training_models
 from slime.utils.arguments import parse_args
+from slime.utils.lifecycle_hooks import completion_requests_eval, validate_lifecycle_args
 from slime.utils.misc import should_run_periodic_action
 
 
 def train(args):
+    validate_lifecycle_args(args)
     configure_logger()
     release_train = args.release_train
 
@@ -47,7 +49,8 @@ def train(args):
 
     # train loop.
     for rollout_id in range(args.start_rollout_id, args.num_rollout):
-        if args.eval_interval is not None and rollout_id == 0 and not args.skip_eval_before_train:
+        initial_eval_id = args.start_rollout_id if getattr(args, "eval_before_train_on_resume", False) else 0
+        if args.eval_interval is not None and rollout_id == initial_eval_id and not args.skip_eval_before_train:
             ray.get(rollout_manager.eval.remote(rollout_id))
 
         rollout_data_ref = ray.get(rollout_manager.generate.remote(rollout_id))
@@ -70,12 +73,12 @@ def train(args):
 
         # Runtime completion releases queue capacity, without claiming that the
         # model/optimizer or this data progress have a durable joint checkpoint.
-        ray.get(rollout_manager.training_completed.remote(rollout_id))
+        completion_event = ray.get(rollout_manager.training_completed.remote(rollout_id))
 
         if release_train or should_run_periodic_action(
             rollout_id, args.save_interval, num_rollout_per_epoch, args.num_rollout
         ):
-            force_sync = release_train or rollout_id == args.num_rollout - 1
+            force_sync = getattr(args, "force_sync_save", False) or release_train or rollout_id == args.num_rollout - 1
             if actor_trains:
                 actor_model.save_model(rollout_id, force_sync=force_sync)
             if args.use_critic:
@@ -95,7 +98,9 @@ def train(args):
         if args.offload_rollout:
             ray.get(rollout_manager.onload_kv.remote())
 
-        if should_run_periodic_action(rollout_id, args.eval_interval, num_rollout_per_epoch):
+        if completion_requests_eval(completion_event) or should_run_periodic_action(
+            rollout_id, args.eval_interval, num_rollout_per_epoch
+        ):
             ray.get(rollout_manager.eval.remote(rollout_id))
 
     ray.get(rollout_manager.dispose.remote())

@@ -23,7 +23,9 @@ entry point. For Ray multinode jobs, run the verification in **every worker
 container** before starting Ray workers; wrapping only the head is insufficient.
 Direct external SGLang services also need verification before their launch.
 
-Use the same locked slime image and existing sampler patch. Git push alone does
+Use the same locked slime image and the pinned sampler endpoint fix in
+`tools/sglang_sampler_endpoint_fix.py` (see
+[curriculum/runtime integration](curriculum-checkpoint-hooks.md)). Git push alone does
 not update installed SGLang. This wrapper modifies the current container's
 installed file, not the image; run it again in every fresh container. A read-only
 source mount needs the already-fixed file mounted at the native source path.

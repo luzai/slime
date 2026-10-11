@@ -62,6 +62,8 @@ def _has_dense_moe_layers(args):
 
 
 def _is_moe_config(hf_config):
+    if getattr(hf_config, "model_type", None) in ("qwen3_5", "qwen3_5_text"):
+        return False
     return any(
         hasattr(hf_config, attr)
         for attr in (
@@ -126,6 +128,10 @@ def _hf_validate_args(args, hf_config):
         ("rms_norm_eps", "norm_epsilon", equal),
         ("rms_norm_eps", "layernorm_epsilon", equal),
     ]:
+        if hf_config_name in ("moe_intermediate_size", "shared_expert_intermediate_size") and not _is_moe_config(
+            hf_config
+        ):
+            continue
         if hf_config_name == "intermediate_size" and not validate_dense_ffn:
             continue
 
